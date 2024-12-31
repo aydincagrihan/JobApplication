@@ -13,11 +13,10 @@ namespace JobApplicationLibrary
         private const int _ageLimit = 18;
         private List<string> techStackList = new() { "C#", "RabbitMQ", "MicroService", "ReactJS", "TypeScript" };
         private const int autoAcceptedYearsOfExperience = 15;
-
-        private IdentityValidator identityValidator;
-        public ApplicationEvaluator()
+        private readonly IIdentityValidator identityValidator;
+        public ApplicationEvaluator(IIdentityValidator identityValidator)
         {
-            identityValidator = new IdentityValidator();
+            this.identityValidator = identityValidator;
         }
 
         public ApplicatonResult Evaluate(JobApplication form)
@@ -27,6 +26,14 @@ namespace JobApplicationLibrary
                 return ApplicatonResult.AutoReject;
             }
 
+            identityValidator.ValidationStatus = form.Applicant.Age > 30 ? ValidationStatus.Detailed : ValidationStatus.Quick;
+
+            //if (identityValidator.CountryDataProvider.CountryData.Country != "TURKIYE")
+
+            //    return ApplicatonResult.TransferredToCTO;
+
+
+            var connectionSucceed = identityValidator.CheckConnectionToRemoteServer();
             var validIdentity = identityValidator.IsValid(form.Applicant.IdentityNumber);
 
             if (!validIdentity)
